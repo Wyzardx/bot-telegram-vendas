@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Bot de Vendas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dark { 
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); 
+            color: #ffffff;
+        }
+        .card-dark {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body class="dark min-h-screen">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center px-4">
+        <div class="card-dark rounded-2xl p-8 w-full max-w-md shadow-2xl">
+            <div class="text-center mb-8">
+                <i class="fas fa-robot text-5xl text-blue-400 mb-4"></i>
+                <h1 class="text-3xl font-bold mb-2">Painel Admin</h1>
+                <p class="text-gray-400">Bot de Vendas</p>
+            </div>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Usuário</label>
+                    <input type="text" id="username" required 
+                           class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Senha</label>
+                    <input type="password" id="password" required
+                           class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full btn-primary p-3 rounded-lg font-semibold">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Header -->
+        <header class="card-dark p-4 shadow-lg">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-robot text-2xl text-blue-400"></i>
+                    <h1 class="text-xl font-bold">Painel Administrativo</h1>
+                </div>
+                <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="max-w-7xl mx-auto p-4">
+            <div class="flex space-x-1 card-dark rounded-xl p-2">
+                <button class="nav-btn flex-1 px-4 py-2 rounded-lg transition-all" data-tab="overview">
+                    <i class="fas fa-chart-pie mr-2"></i>Visão Geral
+                </button>
+                <button class="nav-btn flex-1 px-4 py-2 rounded-lg transition-all" data-tab="users">
+                    <i class="fas fa-users mr-2"></i>Usuários
+                </button>
+                <button class="nav-btn flex-1 px-4 py-2 rounded-lg transition-all" data-tab="products">
+                    <i class="fas fa-box mr-2"></i>Produtos
+                </button>
+                <button class="nav-btn flex-1 px-4 py-2 rounded-lg transition-all" data-tab="orders">
+                    <i class="fas fa-shopping-cart mr-2"></i>Pedidos
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="max-w-7xl mx-auto p-4">
+            <!-- Overview Tab -->
+            <div id="overviewTab" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card-dark rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400">Total Usuários</p>
+                                <p class="text-3xl font-bold" id="totalUsers">-</p>
+                            </div>
+                            <i class="fas fa-users text-3xl text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="card-dark rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400">Total Pedidos</p>
+                                <p class="text-3xl font-bold" id="totalOrders">-</p>
+                            </div>
+                            <i class="fas fa-shopping-cart text-3xl text-green-400"></i>
+                        </div>
+                    </div>
+                    <div class="card-dark rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400">Receita Total</p>
+                                <p class="text-3xl font-bold" id="totalRevenue">-</p>
+                            </div>
+                            <i class="fas fa-dollar-sign text-3xl text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <div class="card-dark rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400">Pendentes</p>
+                                <p class="text-3xl font-bold" id="pendingOrders">-</p>
+                            </div>
+                            <i class="fas fa-clock text-3xl text-orange-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content hidden">
+                <div class="card-dark rounded-xl overflow-hidden">
+                    <div class="p-6 border-b border-gray-700">
+                        <h2 class="text-xl font-bold">Usuários Registrados</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-700">
+                                <tr>
+                                    <th class="p-4 text-left">ID</th>
+                                    <th class="p-4 text-left">Nome</th>
+                                    <th class="p-4 text-left">Username</th>
+                                    <th class="p-4 text-left">Saldo</th>
+                                    <th class="p-4 text-left">Pontos</th>
+                                    <th class="p-4 text-left">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="productsTab" class="tab-content hidden">
+                <div class="mb-6">
+                    <button id="addProductBtn" class="btn-primary px-6 py-3 rounded-lg font-semibold">
+                        <i class="fas fa-plus mr-2"></i>Adicionar Produto
+                    </button>
+                </div>
+                <div class="card-dark rounded-xl overflow-hidden">
+                    <div class="p-6 border-b border-gray-700">
+                        <h2 class="text-xl font-bold">Produtos</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-700">
+                                <tr>
+                                    <th class="p-4 text-left">ID</th>
+                                    <th class="p-4 text-left">Nome</th>
+                                    <th class="p-4 text-left">Preço</th>
+                                    <th class="p-4 text-left">Categoria</th>
+                                    <th class="p-4 text-left">Estoque</th>
+                                    <th class="p-4 text-left">Status</th>
+                                    <th class="p-4 text-left">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable">
+                                <!-- Products will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="ordersTab" class="tab-content hidden">
+                <div class="card-dark rounded-xl overflow-hidden">
+                    <div class="p-6 border-b border-gray-700">
+                        <h2 class="text-xl font-bold">Pedidos</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-700">
+                                <tr>
+                                    <th class="p-4 text-left">ID</th>
+                                    <th class="p-4 text-left">Cliente</th>
+                                    <th class="p-4 text-left">Produto</th>
+                                    <th class="p-4 text-left">Valor</th>
+                                    <th class="p-4 text-left">Status</th>
+                                    <th class="p-4 text-left">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable">
+                                <!-- Orders will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card-dark rounded-xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6">Adicionar Produto</h2>
+            <form id="productForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Nome</label>
+                        <input type="text" id="productName" required class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Descrição</label>
+                        <textarea id="productDescription" class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="3"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Preço</label>
+                            <input type="number" id="productPrice" step="0.01" required class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Estoque</label>
+                            <input type="number" id="productStock" required class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Categoria</label>
+                        <select id="productCategory" class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="premium">Premium</option>
+                            <option value="exclusive">Exclusive</option>
+                            <option value="standard">Standard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-4 mt-6">
+                    <button type="submit" class="flex-1 btn-primary p-3 rounded-lg font-semibold">
+                        <i class="fas fa-save mr-2"></i>Salvar
+                    </button>
+                    <button type="button" id="cancelProductBtn" class="flex-1 bg-gray-600 hover:bg-gray-700 p-3 rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Notification Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card-dark rounded-xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6">Nova Notificação</h2>
+            <form id="notificationForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Título</label>
+                        <input type="text" id="notificationTitle" required class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Mensagem</label>
+                        <textarea id="notificationMessage" required class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="4"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Tipo</label>
+                            <select id="notificationType" class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <option value="info">Informação</option>
+                                <option value="warning">Aviso</option>
+                                <option value="error">Erro</option>
+                                <option value="success">Sucesso</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Expira em (dias)</label>
+                            <input type="number" id="notificationExpires" min="1" max="365" class="w-full p-3 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-4 mt-6">
+                    <button type="submit" class="flex-1 btn-primary p-3 rounded-lg font-semibold">
+                        <i class="fas fa-paper-plane mr-2"></i>Enviar
+                    </button>
+                    <button type="button" id="cancelNotificationBtn" class="flex-1 bg-gray-600 hover:bg-gray-700 p-3 rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
